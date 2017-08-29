@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from tensorflow.contrib.layers import l2_regularizer, xavier_initializer, fully_connected
+from tensorflow.contrib.layers import l2_regularizer, xavier_initializer, fully_connected, flatten
 
 """
 In this file, there are higher-level abstractions for different layers
@@ -11,6 +11,22 @@ and a few others that might not be necessarily common in the literature
 
 Note: All convolutional operations expect NHWC format"""
 
+def binary_cross_entropy(logits, labels, epsilon=1e-7, name="binary_cross_entropy"):
+    with tf.variable_scope(name):
+        
+        clipped_flat_logits = tf.clip_by_value(flatten(logits), epsilon, 1 - epsilon) #protection against zero
+        flat_labels = flatten(labels)
+        
+        return -tf.reduce_sum(flat_labels * tf.log(clipped_flat_logits) +\
+                              (1-flat_labels) * tf.log(1 - clipped_flat_logits), 1)
+
+def unit_gaussian_kl_divergence(mu, sigma, name="gaussian_KL"):
+    # Calculates the relative entropy between probability density functions p, and the ground truth q
+    # x2 is the ground truth
+    # see https://arxiv.org/abs/1312.6114
+    # mu and sigma are tensors with batch_size elements
+    with tf.variable_scope(name):
+        return 0.5 * tf.reduce_sum(tf.square(mu) + tf.square(sigma) - tf.log(tf.square(sigma)) - 1, 1)
 
 #various implementations of this exist, particularly in how the negatives are calculated
 #for more, read https://arxiv.org/abs/1502.01852

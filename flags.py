@@ -3,16 +3,8 @@ import os
 import sys
 
 #==========================Dataset Parameters====================================
-tf.app.flags.DEFINE_string("dataset", 'cifar100',
+tf.app.flags.DEFINE_string("dataset", 'mnist',
                           "Supported datasets for inception experiments. If using custom images, enter None")
-
-
-#=========================Validation Parameters==================================
-tf.app.flags.DEFINE_float("validation_ratio", 0.2,
-                          "The ratio, between 0 and 1, of the TRAINING set to use as validation data.")
-tf.app.flags.DEFINE_integer("validation_frequency", 2000,
-                            "The number of training iterations per session call to the validation set")
-
 
 #==========================Model Parameters==================================
 tf.app.flags.DEFINE_integer("batch_size", 128,
@@ -20,14 +12,14 @@ tf.app.flags.DEFINE_integer("batch_size", 128,
 
 
 #=========================Learning Rate======================================
-tf.app.flags.DEFINE_float("init_learning_rate", 0.01,
-                          "The initial learning rate before any decays")
-tf.app.flags.DEFINE_float("learning_rate_decay", 0.999,
-                          "When the learning rate decays, it will be multiplied by this much")
-tf.app.flags.DEFINE_float("min_learning_rate", 0.0001,
-                          "The learning rate will never fall below this number. Decays resulting in less will be ignored")
-tf.app.flags.DEFINE_integer("decay_steps", 100,
-                          "The number of steps before learning rate is multiplied by learning rate decay")
+#tf.app.flags.DEFINE_float("init_learning_rate", 0.01,
+#                          "The initial learning rate before any decays")
+#tf.app.flags.DEFINE_float("learning_rate_decay", 0.999,
+#                          "When the learning rate decays, it will be multiplied by this much")
+#tf.app.flags.DEFINE_float("min_learning_rate", 0.0001,
+#                          "The learning rate will never fall below this number. Decays resulting in less will be ignored")
+#tf.app.flags.DEFINE_integer("decay_steps", 100,
+#                          "The number of steps before learning rate is multiplied by learning rate decay")
 
 
 
@@ -45,8 +37,6 @@ def flag_test():
     assert tf.app.flags.FLAGS.dataset in supported_datasets, "Your dataset must be cifar100, mnist, or None"
                           
     assert tf.app.flags.FLAGS.batch_size > 0, "Batch size must be a positive integer"
-    
-    assert tf.app.flags.FLAGS.validation_ratio is None or (tf.app.flags.FLAGS.validation_ratio >= 0. and tf.app.flags.FLAGS.validation_ratio <= 1.), "Validation Set Ratio must be between 0 and 1, or None to be turned off"
     
     assert tf.app.flags.FLAGS.l2_lambda_weight > 0, "l2 lambda weight must be positive"
     assert tf.app.flags.FLAGS.l2_lambda_weight_decay > 0. and tf.app.flags.FLAGS.l2_lambda_weight_decay <= 1., "Lambda weight decay for L2 must be within the range (0, 1.]"
