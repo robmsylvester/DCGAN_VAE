@@ -19,12 +19,37 @@ def binary_cross_entropy(logits, labels, epsilon=1e-7, name="binary_cross_entrop
         
         return -tf.reduce_sum(flat_labels * tf.log(clipped_flat_logits) +\
                               (1-flat_labels) * tf.log(1 - clipped_flat_logits), 1)
+    
+def univariate_gaussian_kl_divergence(mu_1, sigma_1, mu_2, sigma_2, name="gaussian_KL"):
+    """Given two univariate probability distributions with variances mu and sigma, calculuates relative entropy
+    between them, given that these two distributions are defined by their means and standard deviations.
+    
+    Formally, this calculates KL(p,q) =  -integral[ p(x) log (q(x) ] dx + integral[ p(x) log (p(x)) ] dx
+     where p is defined by mu_1, mu_2, and q is defined by mu_2, sigma_2
+     
+     Returns a summation over all dimensions over the size of the 1_d argument tensors
+     
+     (standard deviations should be positive...so let's keep them that way with the absolute values)
+    
+    For a decent mathematical breakdown, see this:
+    https://stats.stackexchange.com/questions/7440/kl-divergence-between-two-univariate-gaussians
+    """
 
-def unit_gaussian_kl_divergence(mu, sigma, name="gaussian_KL"):
-    # Calculates the relative entropy between probability density functions p, and the ground truth q
-    # x2 is the ground truth
-    # see https://arxiv.org/abs/1312.6114
-    # mu and sigma are tensors with batch_size elements
+    with tf.variable_scope(name):
+        return tf.reduce_sum( ( tf.log(tf.abs(sigma_2) / tf.abs(sigma_1)) +\
+                 ( tf.square(sigma_1) + tf.square(mu_1 - mu_2) ) / (2*tf.square(sigma_2)) - 0.5), 1)
+        
+        
+
+def univariate_normal_gaussian_kl_divergence(mu, sigma, name="gaussian_normal_KL"):
+    """The relative entropy in this case is against a normal distribution, that is to say, in the above
+    formula for the univariate_gaussian_kl_divergence, mu_2=0 and sigma_2=1. This makes the formula 
+    a bit easier and faster on a computer by eliminating some variables because one of the gaussians
+    params are fixed
+    
+    Another thing really nice happens here too, and that is that the sigmas that we generated from the
+    encoder...you know the ones that could be negative numbers...disappear with that tf.square function.
+    """
     with tf.variable_scope(name):
         return 0.5 * tf.reduce_sum(tf.square(mu) + tf.square(sigma) - tf.log(tf.square(sigma)) - 1, 1)
 
